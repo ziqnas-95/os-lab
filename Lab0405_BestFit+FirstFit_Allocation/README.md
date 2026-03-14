@@ -32,5 +32,5 @@ Write a program to simulate the FF contiguous memory allocation techniques
 - Finally, when a process arrives and needs memory, a memory section large enough for this process is provided. 
 - When it is time to load or swap a process into main memory, and if there is more than one free block of memory of sufficient size, then the operating system must decide which free block to allocate. 
 - First-fit chooses the first available block that is large enough. 
-- 
+
 ## 5.3 How it works...
