@@ -72,9 +72,17 @@ class IndexedAllocationSim:
                 display.append(f"[I:{i}]")
             else:
                 display.append("[D]")
-        print(" ".join(display))
 
-
+        # print(" ".join(display))
+        # Print 5 blocks per line for readability
+        chunk_size = 5
+        for start in range(0, len(display), chunk_size):
+            chunk = display[start:start + chunk_size]
+            # also print the block indexes for clarity
+            indexes = [f"{idx:02d}" for idx in range(start, min(start + chunk_size, len(display)))]
+            print("Index:", " ".join(indexes))
+            print("Blocks:", " ".join(chunk))
+            print()
 
 # --- Running the simulation ---
 sim = IndexedAllocationSim(20)  # Create a disk with 20 blocks
