@@ -59,29 +59,7 @@ class IndexedAllocationSim:
         for i, address in enumerate(pointers):
             print(f"Reading from block {i} at Physical Address {address}: {self.disk[address]}")
 
-    def delete_file(self, filename):
-        print(f"\n--- Deleting File: '{filename}' ---")
-        if filename not in self.directory:
-            print("Error: File not found.")
-            return
-        
-        # Get the index block address from the directory
-        index_block_address = self.directory[filename]
-
-        # Read the data block addresses from the index block
-        data_block_addresses = self.disk[index_block_address]  # Get data block addresses from index block
-
-        # Free the data blocks and the index block
-        for address in data_block_addresses:
-            self.disk[address] = None  # Mark data blocks as free
-        self.disk[index_block_address] = None  # Mark index block as free
-
-        # Remove the file from the directory
-        del self.directory[filename]
-
-        print(f"File '{filename}' deleted successfully.")
     
-
     def show_disk_map(self):
         print("\n--- Disk Map ---")
 
@@ -106,6 +84,31 @@ class IndexedAllocationSim:
             print("Blocks:", " ".join(chunk))
             print()
 
+
+    def delete_file(self, filename):
+        print(f"\n--- Deleting File: '{filename}' ---")
+        if filename not in self.directory:
+            print("Error: File not found.")
+            return
+        
+        # Get the index block address from the directory
+        index_block_address = self.directory[filename]
+
+        # Read the data block addresses from the index block
+        data_block_addresses = self.disk[index_block_address]  # Get data block addresses from index block
+
+        # Free the data blocks and the index block
+        for address in data_block_addresses:
+            self.disk[address] = None  # Mark data blocks as free
+        self.disk[index_block_address] = None  # Mark index block as free
+
+        # Remove the file from the directory
+        del self.directory[filename]
+
+        print(f"File '{filename}' deleted successfully.")
+
+
+# Change here 
 # --- Running the simulation ---
 sim = IndexedAllocationSim(20)  # Create a disk with 20 blocks
 
@@ -115,12 +118,26 @@ sim.create_file("photo.jpg", 5)  # Create another file that needs 5 data blocks 
 sim.create_file("document.pdf", 2)  # Create a third file that needs 2 data blocks + 1 index block
 sim.create_file("video.mp4", 7)  # Create a fourth file that needs 7 data blocks + 1 index block
 
-# Show the disk map after file creation
-sim.show_disk_map()  
+sim.show_disk_map()  # Show the disk map after file creation
 
-# Retrieve a file
-sim.read_file("notes.txt")  # Read the file we just created
-sim.read_file("photo.jpg")  # Read the second file
+# Prompt to choose a file to read
+print("\n--- Directory Contents ---")
+for filename in sim.directory:
+    print(f"File: {filename}, Index Block: {sim.directory[filename]}")
 
-sim.delete_file("notes.txt")  # Delete the first file
+print("Choose a file to read:")
+filename_to_read = input("Enter filename to read: ")
+if filename_to_read in sim.directory:
+    sim.read_file(filename_to_read)
+else:
+    print("File not found in directory.") 
+
+
+print("Choose a file to delete:")
+filename_to_delete = input("Enter filename to delete: ")
+if filename_to_delete in sim.directory:
+    sim.delete_file(filename_to_delete)
+else:
+    print("File not found in directory.") 
+  
 sim.show_disk_map()  # Show the disk map after deletion
