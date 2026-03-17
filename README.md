@@ -1,5 +1,7 @@
 # Operating Systems Lab
 
+## [How to use Repo (click here)](https://github.com/ziqnas-95/ziqnas-95/blob/944aec488fc1f3a462c130ef6b69b051d09c19f2/git-workflow.md)
+
 ### Tutorial/Lab session will start on Week 4 (30/3/2026) onwards
 
 Every week every group will present the lab for the particular week and demonstrate a working code that implement the algorithm given. 
