@@ -42,6 +42,7 @@ class IndexedAllocationSim:
 
     def read_file(self, filename):
         print(f"\n--- Reading File: '{filename}' ---")
+        # Check if the file exists in the directory
         if filename not in self.directory:
             print("Error: File not found.")
             return
