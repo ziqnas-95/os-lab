@@ -1,31 +1,34 @@
 import random
 
 class IndexedAllocationSim:
+
     def __init__(self, disk_size=50):
         self.disk = [None] * disk_size  # Simulate disk blocks
         self.disk_size = disk_size
         self.directory = {}  # filename -> list of block indices
 
+    # Helper method to find free blocks on the disk
     def get_free_blocks(self, count):
         free_indices = [i for i, block in enumerate(self.disk) if block is None]
         if len(free_indices) < count:
             return None  # Not enough free blocks
         return random.sample(free_indices, count)
     
+    # Method to create a file with a given name and number of data blocks
     def create_file(self, filename, num_blocks):
         print(f"\n--- Creating File: '{filename}' ({num_blocks} data blocks) ---")
 
         # Need space for the data blocks plus one block for the index
         total_needed = num_blocks + 1  # +1 for the index block
-        blocks = self.get_free_blocks(total_needed)
+        blocks = self.get_free_blocks(total_needed) 
 
-        if not blocks:
+        if not blocks: 
             print("Error: Not enough free space on disk to create the file.")
             return
         
         # Pick the first block as the index block and the rest as data blocks
         index_block_address = blocks[0]  # First block is the index block
-        data_block_addresses = blocks[1:]  # Remaining blocks are data blocks
+        data_block_addresses = blocks[1:total_needed]  # Remaining blocks are data blocks
 
         # Allocate blocks on disk
         self.disk[index_block_address] = data_block_addresses  # Store data block addresses in index block
@@ -39,9 +42,10 @@ class IndexedAllocationSim:
         print(f"Index block is at: {index_block_address}")
         print(f"Data blocks are at: {data_block_addresses}")
 
-
+    # Method to read a file's data using its index block
     def read_file(self, filename):
         print(f"\n--- Reading File: '{filename}' ---")
+        # Check if the file exists in the directory
         if filename not in self.directory:
             print("Error: File not found.")
             return
@@ -59,6 +63,7 @@ class IndexedAllocationSim:
         for i, address in enumerate(pointers):
             print(f"Reading from block {i} at Physical Address {address}: {self.disk[address]}")
 
+    # Method to delete a file and free its blocks
     def delete_file(self, filename):
         print(f"\n--- Deleting File: '{filename}' ---")
         if filename not in self.directory:
@@ -81,7 +86,7 @@ class IndexedAllocationSim:
 
         print(f"File '{filename}' deleted successfully.")
     
-
+    # Method to display the current state of the disk
     def show_disk_map(self):
         print("\n--- Disk Map ---")
 
@@ -101,7 +106,7 @@ class IndexedAllocationSim:
         for start in range(0, len(display), chunk_size):
             chunk = display[start:start + chunk_size]
             # also print the block indexes for clarity
-            indexes = [f"{idx:02d}" for idx in range(start, min(start + chunk_size, len(display)))]
+            indexes = [f"{idx:02d}" for idx in range(start, min(start + chunk_size, len(display)))] 
             print("Index:", " ".join(indexes))
             print("Blocks:", " ".join(chunk))
             print()
@@ -119,8 +124,8 @@ sim.create_file("video.mp4", 7)  # Create a fourth file that needs 7 data blocks
 sim.show_disk_map()  
 
 # Retrieve a file
-sim.read_file("notes.txt")  # Read the file we just created
-sim.read_file("photo.jpg")  # Read the second file
+sim.read_file("notes.txt")  
 
-sim.delete_file("notes.txt")  # Delete the first file
-sim.show_disk_map()  # Show the disk map after deletion
+# Delete the first file
+sim.delete_file("notes.txt")  
+
