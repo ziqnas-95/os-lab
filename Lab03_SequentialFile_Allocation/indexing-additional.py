@@ -1,6 +1,8 @@
 import random
 
 class IndexedAllocationSim:
+
+    
     def __init__(self, disk_size=50):
         self.disk = [None] * disk_size  # Simulate disk blocks
         self.disk_size = disk_size
@@ -108,36 +110,49 @@ class IndexedAllocationSim:
         print(f"File '{filename}' deleted successfully.")
 
 
-# Change here 
-# --- Running the simulation ---
-sim = IndexedAllocationSim(20)  # Create a disk with 20 blocks
+def main():
+    # Initialize simulation with 20 blocks
+    size = int(input("Enter disk size: "))
+    sim = IndexedAllocationSim(20)
+    
+    while True:
+        print("\n--- Indexed Allocation Menu ---")
+        print("1. Create File")
+        print("2. Read File")
+        print("3. Delete File")
+        print("4. Show Disk Map")
+        print("5. Exit")
+        
+        choice = input("\nSelect an option (1-5): ")
 
-# Create some files
-sim.create_file("notes.txt", 3)  # Create a file that needs 3 data blocks + 1 index block
-sim.create_file("photo.jpg", 5)  # Create another file that needs 5 data blocks + 1 index block
-sim.create_file("document.pdf", 2)  # Create a third file that needs 2 data blocks + 1 index block
-sim.create_file("video.mp4", 7)  # Create a fourth file that needs 7 data blocks + 1 index block
+        if choice == '1':
+            name = input("Enter filename: ")
+            try:
+                size = int(input("Enter number of data blocks: "))
+                if size <= 0:
+                    print("Error: Size must be greater than 0.")
+                    continue
+                sim.create_file(name, size)
+            except ValueError:
+                print("Error: Please enter a valid number for data blocks.")
 
-sim.show_disk_map()  # Show the disk map after file creation
+        elif choice == '2':
+            name = input("Enter filename to read: ")
+            sim.read_file(name)
 
-# Prompt to choose a file to read
-print("\n--- Directory Contents ---")
-for filename in sim.directory:
-    print(f"File: {filename}, Index Block: {sim.directory[filename]}")
+        elif choice == '3':
+            name = input("Enter filename to delete: ")
+            sim.delete_file(name)
 
-print("Choose a file to read:")
-filename_to_read = input("Enter filename to read: ")
-if filename_to_read in sim.directory:
-    sim.read_file(filename_to_read)
-else:
-    print("File not found in directory.") 
+        elif choice == '4':
+            sim.show_disk_map()
+
+        elif choice == '5':
+            print("Exiting simulation. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
 
 
-print("Choose a file to delete:")
-filename_to_delete = input("Enter filename to delete: ")
-if filename_to_delete in sim.directory:
-    sim.delete_file(filename_to_delete)
-else:
-    print("File not found in directory.") 
-  
-sim.show_disk_map()  # Show the disk map after deletion
+if __name__ == "__main__":
+    main()
