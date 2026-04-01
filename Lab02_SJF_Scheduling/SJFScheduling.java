@@ -20,18 +20,32 @@ class Process {
 public class SJFScheduling {
 
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
         List<Process> processes = new ArrayList<>();
-        processes.add(new Process("A", 0, 3));
-        processes.add(new Process("B", 2, 6));
-        processes.add(new Process("C", 4, 4));
-        processes.add(new Process("D", 6, 5));
-        processes.add(new Process("E", 8, 2));
 
-        System.out.println("=================================================================");
+        System.out.print("Enter the number of processes/jobs: ");
+        int numberOfProcesses = scanner.nextInt();
+
+        for (int i = 0; i < numberOfProcesses; i++) {
+            String processId = "P" + (i + 1);
+            
+            System.out.println("\nEnter details for " + processId + ":");
+            System.out.print("Arrival Time: ");
+            int arrivalTime = scanner.nextInt();
+            
+            System.out.print("Burst Time: ");
+            int burstTime = scanner.nextInt();
+
+            processes.add(new Process(processId, arrivalTime, burstTime));
+        }
+
+        System.out.println("\n=================================================================");
         System.out.println("          SHORTEST JOB FIRST (SJF) SCHEDULING ALGORITHM          ");
         System.out.println("=================================================================");
         
         runSJF(processes);
+        
+        scanner.close();
     }
 
     public static void runSJF(List<Process> pList) {
