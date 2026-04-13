@@ -73,7 +73,8 @@ class SequentialAllocationSim:
                     actual_addr = start + offset
                     print(f"\n[READ] Accessing Block {actual_addr} (Start {start} + Offset {offset})")
                     # print(f"Content: {self.disk[actual_addr]}")
-                    print(f"Content: Data {fname} (Relative Block: {offset}, Physical Block: {actual_addr})")
+                    # print(f"Content: Data {fname} (Relative Block: {offset}, Physical Block: {actual_addr})")
+                    print(f"Data of Block {offset} of {fname} is stored at Physical Block: {actual_addr}")
                 else:
                     print("[!] Offset out of bounds.")
             except ValueError:
@@ -92,9 +93,12 @@ class SequentialAllocationSim:
             print(f"  Addr : {indices}\n  Disk : {blocks}\n  " + "-"*35)
 
 def main():
-    sim = SequentialAllocationSim(20)
+    init_size = 20;
+    sim = SequentialAllocationSim(init_size)
+    print("\nSequential-File-Allocation-Simulator\nDisk Size of 20 is initialized.")
+
     while True:
-        print("\n1. Create\n2. Read (Direct Access)\n3. Disk Map\n4. Exit")
+        print("\n1. Create\n2. Read (Direct Access)\n3. Disk Map\n4. Delete File\n5. Exit")
         choice = input("Choice: ")
         if choice == '1':
             try:
@@ -103,10 +107,10 @@ def main():
             except: pass
         elif choice == '2': sim.read_file_directly()
         elif choice == '3': sim.show_disk_map()
-        elif choice == '4': break
-        elif choice == '5': 
+        elif choice == '4': 
             fname = input("Enter filename to delete (e.g., file1): ").strip()
             sim.delete_file(fname)
+        elif choice == '5': break
 
 if __name__ == "__main__":
     main()
