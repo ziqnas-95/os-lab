@@ -89,8 +89,8 @@ class SequentialAllocationSim:
         print("="*40)
         for i in range(0, self.disk_size, 5):
             indices = "  ".join([f"{idx:02d}" for idx in range(i, min(i+5, self.disk_size))])
-            blocks = " ".join(["[ D ]" if not self.free_blocks[j] else "[ . ]" for j in range(i, min(i+5, self.disk_size))])
-            print(f"  Addr : {indices}\n  Disk : {blocks}\n  " + "-"*35)
+            blocks = " ".join(["[ 1 ]" if not self.free_blocks[j] else "[ 0 ]" for j in range(i, min(i+5, self.disk_size))])
+            print(f"  Addr  : {indices}\n  Block : {blocks}\n  " + "-"*35)
 
 def main():
     init_size = 20;
