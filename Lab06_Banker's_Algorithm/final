@@ -1,0 +1,77 @@
+def print_table(jobs, allocated, maximum, needs):
+    """Helper function to print the data in a clean, PDF-aligned table."""
+    print(f"{'Job No.':<10} | {'Devices Allocated':<20} | {'Maximum Required':<20} | {'Remaining Needs':<15}")
+    print("-" * 75)
+    for i in range(len(jobs)):
+        print(f"{jobs[i]:<10} | {allocated[i]:<20} | {maximum[i]:<20} | {needs[i]:<15}")
+    print("-" * 75)
+
+def main():
+    print("=== BANKER'S ALGORITHM SETUP ===")
+    
+    # 1. Get system dimensions
+    while True:
+        try:
+            num_jobs = int(input("Enter the number of jobs: "))
+            total_devices = int(input("Enter the total number of devices in the system: "))
+            if num_jobs > 0 and total_devices > 0:
+                break
+        except ValueError:
+            print("❌ Invalid input. Please enter integers only.")
+
+    jobs = [str(i+1) for i in range(num_jobs)]
+    devices_allocated = []
+    maximum_required = []
+
+    # 2. Get Job Details from the user
+    print("\n--- Enter Job Details ---")
+    for i in range(num_jobs):
+        while True:
+            try:
+                alloc = int(input(f"Devices Allocated for Job {jobs[i]}: "))
+                max_req = int(input(f"Maximum Required for Job {jobs[i]}: "))
+                devices_allocated.append(alloc)
+                maximum_required.append(max_req)
+                break
+            except ValueError:
+                print("  ❌ Invalid input. Please enter integers only.")
+
+    # 3. Calculations 
+    remaining_needs = []
+    for i in range(num_jobs):
+        remaining_needs.append(maximum_required[i] - devices_allocated[i])
+        
+    total_allocated = sum(devices_allocated)
+    available_devices = total_devices - total_allocated
+
+    # 4. Print the PDF-Aligned Table
+    print("\n\n=== SYSTEM STATE ===")
+    print_table(jobs, devices_allocated, maximum_required, remaining_needs)
+    
+    print(f"Total number of devices allocated:     {total_allocated}")
+    print(f"Total number of devices in the system: {total_devices}")
+
+    # 5. Silently calculate if the state is safe or unsafe
+    work = available_devices
+    finish = [False] * num_jobs
+    
+    count = 0
+    while count < num_jobs:
+        found_job = False
+        for p in range(num_jobs):
+            if not finish[p] and remaining_needs[p] <= work:
+                work += devices_allocated[p]
+                finish[p] = True
+                found_job = True
+                count += 1
+        if not found_job:
+            break # Deadlock / Unsafe
+
+    # 6. Final Clean Output
+    if count == num_jobs:
+        print(f"Conclusion: This is a SAFE state – {total_allocated} devices are allocated; {available_devices} are still available.")
+    else:
+        print(f"Conclusion: This is an UNSAFE state – {total_allocated} devices are allocated; only {available_devices} is/are still available.")
+
+if __name__ == "__main__":
+    main()
