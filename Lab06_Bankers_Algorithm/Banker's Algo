@@ -1,0 +1,168 @@
+# =============================================================
+#  Banker's Algorithm — Deadlock Avoidance
+#  Single resource type (devices)
+#  WIA2004 Operating Systems — Lab 6
+# =============================================================
+
+def print_separator(width=75):
+    print("-" * width)
+
+def print_table(jobs, allocated, maximum, needs):
+    """Print system state in a clean, aligned table."""
+    header = f"{'Job No.':<10} | {'Devices Allocated':<20} | {'Maximum Required':<20} | {'Remaining Needs':<15}"
+    print(header)
+    print_separator()
+    for i in range(len(jobs)):
+        print(f"{jobs[i]:<10} | {allocated[i]:<20} | {maximum[i]:<20} | {needs[i]:<15}")
+    print_separator()
+
+def get_positive_int(prompt):
+    """Keep asking until the user enters a positive integer."""
+    while True:
+        try:
+            value = int(input(prompt))
+            if value > 0:
+                return value
+            print("  ❌ Value must be greater than 0. Try again.")
+        except ValueError:
+            print("  ❌ Invalid input. Please enter an integer.")
+
+def get_non_negative_int(prompt):
+    """Keep asking until the user enters a non-negative integer."""
+    while True:
+        try:
+            value = int(input(prompt))
+            if value >= 0:
+                return value
+            print("  ❌ Value cannot be negative. Try again.")
+        except ValueError:
+            print("  ❌ Invalid input. Please enter an integer.")
+
+def safety_algorithm(num_jobs, devices_allocated, remaining_needs, available_devices):
+    """
+    Run the Banker's safety algorithm.
+
+    Logic:
+      work    = available devices we can offer right now
+      finish  = tracks which jobs have been simulated to completion
+      seq     = records the safe execution order
+
+    Each pass scans all unfinished jobs. If a job's remaining
+    need <= work, it can run to completion — we release its
+    devices back into work and mark it finished. Repeat until
+    all jobs finish (SAFE) or no progress is made (UNSAFE).
+
+    Returns:
+      (is_safe: bool, safe_sequence: list)
+    """
+    work   = available_devices
+    finish = [False] * num_jobs
+    seq    = []
+    count  = 0
+
+    while count < num_jobs:
+        found_job = False
+        for p in range(num_jobs):
+            if not finish[p] and remaining_needs[p] <= work:
+                # This job can finish — simulate releasing its devices
+                work     += devices_allocated[p]
+                finish[p]  = True
+                seq.append(p)
+                found_job  = True
+                count     += 1
+        if not found_job:
+            break  # No progress possible — unsafe state
+
+    is_safe = (count == num_jobs)
+    return is_safe, seq
+
+def main():
+    print("=" * 55)
+    print("       BANKER'S ALGORITHM — DEADLOCK AVOIDANCE")
+    print("=" * 55)
+
+    # ── STEP 1: System dimensions ────────────────────────────
+    print("\n[Step 1] System Setup")
+    num_jobs      = get_positive_int("  Enter the number of jobs: ")
+    total_devices = get_positive_int("  Enter the total number of devices in the system: ")
+
+    jobs              = [f"Job {i+1}" for i in range(num_jobs)]
+    devices_allocated = []
+    maximum_required  = []
+
+    # ── STEP 2: Per-job input with logical validation ────────
+    print(f"\n[Step 2] Enter details for each job")
+    print(f"         (Allocated cannot exceed Maximum;\n"
+          f"          Maximum cannot exceed total devices: {total_devices})\n")
+
+    for i in range(num_jobs):
+        print(f"  --- {jobs[i]} ---")
+        while True:
+            alloc   = get_non_negative_int(f"    Devices Allocated : ")
+            max_req = get_non_negative_int(f"    Maximum Required  : ")
+
+            # Guard 1: allocated cannot exceed declared maximum
+            if alloc > max_req:
+                print(f"    ❌ Allocated ({alloc}) cannot exceed Maximum ({max_req}). Re-enter.\n")
+                continue
+
+            # Guard 2: maximum cannot exceed total devices in system
+            if max_req > total_devices:
+                print(f"    ❌ Maximum ({max_req}) cannot exceed total devices ({total_devices}). Re-enter.\n")
+                continue
+
+            devices_allocated.append(alloc)
+            maximum_required.append(max_req)
+            break
+
+    # ── STEP 3: Calculate Need and Available ─────────────────
+    remaining_needs   = [maximum_required[i] - devices_allocated[i]
+                         for i in range(num_jobs)]
+    total_allocated   = sum(devices_allocated)
+    available_devices = total_devices - total_allocated
+
+    # Guard 3: total allocated cannot exceed total devices
+    if available_devices < 0:
+        print(f"\n  ❌ Total allocated ({total_allocated}) exceeds total "
+              f"devices ({total_devices}). Invalid system state.")
+        return
+
+    # ── STEP 4: Print the system state table ─────────────────
+    print("\n\n" + "=" * 55)
+    print("             SYSTEM STATE")
+    print("=" * 55)
+    print_table(jobs, devices_allocated, maximum_required, remaining_needs)
+    print(f"  Total devices in system    : {total_devices}")
+    print(f"  Total devices allocated    : {total_allocated}")
+    print(f"  Total devices available    : {available_devices}")
+
+    # ── STEP 5: Run the safety algorithm ─────────────────────
+    is_safe, seq = safety_algorithm(
+        num_jobs, devices_allocated, remaining_needs, available_devices
+    )
+
+    # ── STEP 6: Print conclusion ──────────────────────────────
+    print("\n" + "=" * 55)
+    print("             CONCLUSION")
+    print("=" * 55)
+
+    if is_safe:
+        safe_sequence_str = " → ".join(jobs[p] for p in seq)
+        print(f"  State      : ✅ SAFE")
+        print(f"  Allocated  : {total_allocated} device(s)")
+        print(f"  Available  : {available_devices} device(s)")
+        print(f"  Safe order : {safe_sequence_str}")
+    else:
+        finished   = [jobs[p] for p in seq]
+        stuck      = [jobs[p] for p in range(num_jobs) if p not in seq]
+        print(f"  State      : ❌ UNSAFE — deadlock risk!")
+        print(f"  Allocated  : {total_allocated} device(s)")
+        print(f"  Available  : {available_devices} device(s)")
+        if finished:
+            print(f"  Finished   : {', '.join(finished)}")
+        print(f"  Stuck      : {', '.join(stuck)} cannot proceed")
+
+    print("=" * 55 + "\n")
+
+if __name__ == "__main__":
+    main()
