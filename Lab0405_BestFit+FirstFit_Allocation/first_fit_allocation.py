@@ -1,42 +1,90 @@
-# 1. Initial Memory Setup
-memory_blocks = [
-    {"id": 1, "size": 100, "pid": None},
-    {"id": 2, "size": 500, "pid": None},
-    {"id": 3, "size": 200, "pid": None},
-    {"id": 4, "size": 300, "pid": None},
-    {"id": 5, "size": 600, "pid": None},
-]
+def firstFit(blockSize, m, processSize, n):
+    originalBlockSize = blockSize[:]
+    allocation = [-1] * n
 
-# 2. Core First-Fit Algorithm
-def first_fit_allocate(pid, size):
-    for block in memory_blocks:
-        # Check if the block is empty AND big enough
-        if block["pid"] is None and block["size"] >= size:
-            block["pid"] = pid
-            print(f"  [SUCCESS] '{pid}' placed in Block {block['id']}")
-            return True
-            
-    print(f"  [FAILED] No suitable block for '{pid}'")
-    return False
+    for i in range(n):
+        for j in range(m):
+            if blockSize[j] >= processSize[i]:
+                allocation[i] = j
+                blockSize[j] -= processSize[i]
+                break
 
-# 3. Display Function
-def display_memory():
-    print("\n--- Current Memory State ---")
-    for b in memory_blocks:
-        status = b["pid"] if b["pid"] else "Free"
-        print(f"Block {b['id']} ({b['size']} KB) : {status}")
-    print("----------------------------\n")
+    # --- Table Display ---
+    col0 = 16  # Memory location
+    col1 = 18  # Memory block size
+    col2 = 14  # Job number
+    col3 = 12  # Job size
+    col4 = 10  # Status
+    col5 = 22  # Internal fragmentation
 
-# 4. Main Program Loop
-display_memory()
+    border = "+" + "-"*col0 + "+" + "-"*col1 + "+" + "-"*col2 + "+" + "-"*col3 + "+" + "-"*col4 + "+" + "-"*col5 + "+"
 
-while True:
-    pid = input("Enter Process ID (or type 'done'): ")
-    if pid.lower() == 'done':
-        break
-        
-    size = int(input(f"Enter size for {pid} (in KB): "))
-    
-    # Attempt to allocate, then show memory
-    first_fit_allocate(pid, size)
-    display_memory()
+    def row(loc, blk, job, jsize, status, frag, pointer=""):
+        prefix = f"{pointer:<2}"
+        return (f"|{prefix}{str(loc):<{col0-2}}|{str(blk):<{col1}}"
+                f"|{str(job):<{col2}}|{str(jsize):<{col3}}|{str(status):<{col4}}|{str(frag):<{col5}}|")
+
+    print("\nMemory List:")
+    print(border)
+    print(row("Memory location", "Memory block size", "Job number", "Job size", "Status", "Internal fragmentation"))
+    print(border)
+
+    total_available = sum(originalBlockSize)
+    total_used = 0
+
+    # Build a table indexed by block (memory location order)
+    # rows[j] = (pointer, loc, blk_size, job_no, job_size, status, int_frag)
+    rows = {}
+
+    for i in range(n):
+        if allocation[i] != -1:
+            blk_idx  = allocation[i]
+            total_used += processSize[i]
+            rows[blk_idx] = (
+                "->",
+                blk_idx + 1,
+                f"{originalBlockSize[blk_idx]}K",
+                f"J{i + 1}",
+                f"{processSize[i]}K",
+                "Busy",
+                f"{blockSize[blk_idx]}K"
+            )
+
+    # Fill in free blocks
+    for j in range(m):
+        if j not in rows:
+            rows[j] = (
+                "",
+                j + 1,
+                f"{originalBlockSize[j]}K",
+                "", "", "Free", ""
+            )
+
+    # Print rows in sequential memory location order
+    for j in sorted(rows.keys()):
+        ptr, loc, blk_size, job_no, job_size, status, int_frag = rows[j]
+        print(row(loc, blk_size, job_no, job_size, status, int_frag, pointer=ptr))
+
+    print(border)
+
+    total_avail_str = f"Total Available: {total_available}K"
+    total_used_str  = f"Total Used: {total_used}K"
+    print(f"| {total_avail_str:<{col0+col1-1}}| {'':<{col2-1}}| {total_used_str:<{col3+col4+col5+2}}|")
+    print(border)
+
+
+if __name__ == '__main__':
+    m = int(input("Enter the number of memory blocks: "))
+    blockSize = []
+    for i in range(m):
+        size = int(input(f"  Size of Block {i + 1} (in K): "))
+        blockSize.append(size)
+
+    n = int(input("\nEnter the number of processes: "))
+    processSize = []
+    for i in range(n):
+        size = int(input(f"  Size of Process {i + 1} (in K): "))
+        processSize.append(size)
+
+    print("\n--- First Fit Allocation Results ---")
+    firstFit(blockSize, m, processSize, n)
